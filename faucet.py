@@ -187,11 +187,11 @@ def transfer_peach(private_key, to_address, amount_wei):
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
 
         try:
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         except Exception as e1:
             print(f"{Fore.YELLOW}[!] raw_transaction failed: {e1}{Style.RESET_ALL}")
             try:
-                tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+                tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
             except Exception as e2:
                 print(f"{Fore.RED}[x] Failed: {e2}{Style.RESET_ALL}")
                 progress_bar_animation("[~] Waiting before retry...", 3)
