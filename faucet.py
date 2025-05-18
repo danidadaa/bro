@@ -239,16 +239,28 @@ def read_wallet_address():
         return None
 
 def get_cycle_count():
-    while True:
+    if len(sys.argv) > 1:
         try:
-            cycles = int(input(f"{Fore.YELLOW}🔢 Enter the number of cycles (each cycle creates 10 wallets): {Style.RESET_ALL}"))
+            cycles = int(sys.argv[1])
             if cycles <= 0:
                 print(f"{Fore.RED}❌ Number of cycles must be greater than 0{Style.RESET_ALL}")
-                continue
+                sys.exit(1)
             print(f"{Fore.GREEN}✅ Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
             return cycles
         except ValueError:
-            print(f"{Fore.RED}❌ Please enter a valid number{Style.RESET_ALL}")
+            print(f"{Fore.RED}❌ Invalid CLI argument. Please enter a valid number.{Style.RESET_ALL}")
+            sys.exit(1)
+    else:
+        while True:
+            try:
+                cycles = int(input(f"{Fore.YELLOW}🔢 Enter the number of cycles (each cycle creates 10 wallets): {Style.RESET_ALL}"))
+                if cycles <= 0:
+                    print(f"{Fore.RED}❌ Number of cycles must be greater than 0{Style.RESET_ALL}")
+                    continue
+                print(f"{Fore.GREEN}✅ Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
+                return cycles
+            except ValueError:
+                print(f"{Fore.RED}❌ Please enter a valid number{Style.RESET_ALL}")
 
 def process_batch(recipient, batch_size=10):
     wallets = []
