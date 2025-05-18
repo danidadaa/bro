@@ -15,7 +15,7 @@ WEB3_PROVIDER = "https://testnet.dplabs-internal.com"
 FAUCET_URL = "https://api.pharosnetwork.xyz/faucet/daily"
 LOGIN_URL = "https://api.pharosnetwork.xyz/user/login"
 INVITE_CODE = ""
-WALLET_FILE = "wallet.txt"
+WALLET_FILE = "100.txt"
 DATA_FILE = "data.json"
 
 HEADERS = {
@@ -60,13 +60,13 @@ def check_rpc_connection():
     print(f"{Fore.BLUE}🔍 Checking RPC connection...{Style.RESET_ALL}")
     try:
         if w3.is_connected():
-            print(f"{Fore.GREEN}✅ Connected to RPC: {WEB3_PROVIDER}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[✓] Connected to RPC: {WEB3_PROVIDER}{Style.RESET_ALL}")
             return True
         else:
-            print(f"{Fore.RED}❌ Failed to connect to RPC: {WEB3_PROVIDER}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Failed to connect to RPC: {WEB3_PROVIDER}{Style.RESET_ALL}")
             return False
     except Exception as e:
-        print(f"{Fore.RED}❌ Error checking RPC: {str(e)}{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Error checking RPC: {str(e)}{Style.RESET_ALL}")
         return False
 
 def generate_wallet():
@@ -100,7 +100,7 @@ def create_signature(private_key, message="pharos"):
         signed_message = w3.eth.account.sign_message(message_hash, private_key=private_key)
         return signed_message.signature.hex(), account.address
     except Exception as e:
-        print(f"{Fore.RED}❌ Failed to create signature: {str(e)}{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Failed to create signature: {str(e)}{Style.RESET_ALL}")
         return None, None
 
 def login(address, signature, retries=3):
@@ -114,27 +114,27 @@ def login(address, signature, retries=3):
         try:
             response = requests.post(LOGIN_URL, headers=HEADERS, params=login_params)
             if response.status_code == 200 and response.json().get("code") == 0:
-                print(f"{Fore.GREEN}✅ Login successful for {address}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[✓] Login successful for {address}{Style.RESET_ALL}")
                 return response.json().get("data").get("jwt")
-            print(f"{Fore.RED}❌ Login failed (Attempt {attempt+1}/{retries}): {response.json()}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Login failed (Attempt {attempt+1}/{retries}): {response.json()}{Style.RESET_ALL}")
         except Exception as e:
-            print(f"{Fore.RED}❌ Login failed (Attempt {attempt+1}/{retries}): {str(e)}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Login failed (Attempt {attempt+1}/{retries}): {str(e)}{Style.RESET_ALL}")
         
         if attempt < retries - 1:
-            progress_bar_animation("⏳ Retrying login...", 2)
+            progress_bar_animation("[~] Retrying login...", 2)
     
-    print(f"{Fore.RED}❌ Login failed after {retries} attempts{Style.RESET_ALL}")
+    print(f"{Fore.RED}[x] Login failed after {retries} attempts{Style.RESET_ALL}")
     return None
 
 def claim_faucet(address, private_key):
     signature, recovered_address = create_signature(private_key)
     if not signature or recovered_address.lower() != address.lower():
-        print(f"{Fore.RED}❌ Failed to create signature or address mismatch{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Failed to create signature or address mismatch{Style.RESET_ALL}")
         return False
     
     jwt = login(address, signature)
     if not jwt:
-        print(f"{Fore.RED}❌ Login failed{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Login failed{Style.RESET_ALL}")
         return False
     
     headers = HEADERS.copy()
@@ -144,16 +144,16 @@ def claim_faucet(address, private_key):
         try:
             response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
             if response.status_code == 200:
-                print(f"{Fore.GREEN}✅ Successfully claimed faucet for {address}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
                 return True
-            print(f"{Fore.RED}❌ Failed to claim faucet (Attempt {attempt+1}/3): {response.json()}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Failed to claim faucet (Attempt {attempt+1}/3): {response.json()}{Style.RESET_ALL}")
         except Exception as e:
-            print(f"{Fore.RED}❌ Failed to claim faucet (Attempt {attempt+1}/3): {str(e)}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Failed to claim faucet (Attempt {attempt+1}/3): {str(e)}{Style.RESET_ALL}")
         
         if attempt < 2:
-            progress_bar_animation("⏳ Retrying faucet claim...", 2)
+            progress_bar_animation("[~] Retrying faucet claim...", 2)
     
-    print(f"{Fore.RED}❌ Failed to claim faucet after 3 attempts{Style.RESET_ALL}")
+    print(f"{Fore.RED}[x] Failed to claim faucet after 3 attempts{Style.RESET_ALL}")
     return False
 
 def get_balance(address):
@@ -162,7 +162,7 @@ def get_balance(address):
         balance_phrs = w3.from_wei(balance_wei, "ether")
         return balance_wei, balance_phrs
     except Exception as e:
-        print(f"{Fore.RED}❌ Failed to get balance for {address}: {str(e)}{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Failed to get balance for {address}: {str(e)}{Style.RESET_ALL}")
         return 0, 0
 
 def transfer_peach(private_key, to_address, amount_wei):
@@ -187,30 +187,30 @@ def transfer_peach(private_key, to_address, amount_wei):
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
 
         try:
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
         except Exception as e1:
             print(f"{Fore.YELLOW}[!] raw_transaction failed: {e1}{Style.RESET_ALL}")
             try:
-                tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+                tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             except Exception as e2:
-                print(f"{Fore.RED}❌ Failed: {e2}{Style.RESET_ALL}")
-                progress_bar_animation("⏳ Waiting before retry...", 3)
+                print(f"{Fore.RED}[x] Failed: {e2}{Style.RESET_ALL}")
+                progress_bar_animation("[~] Waiting before retry...", 3)
                 return False
 
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         
         if receipt.status == 1:
-            print(f"{Fore.GREEN}✅ Tx Hash: {w3.to_hex(tx_hash)}{Style.RESET_ALL}")
-            progress_bar_animation("⏳ Processing transaction...", 3)
+            print(f"{Fore.GREEN}[✓] Tx Hash: {w3.to_hex(tx_hash)}{Style.RESET_ALL}")
+            progress_bar_animation("[~] Processing transaction...", 3)
             return True
         else:
-            print(f"{Fore.RED}❌ Transfer failed for {from_address}{Style.RESET_ALL}")
-            progress_bar_animation("⏳ Waiting before retry...", 3)
+            print(f"{Fore.RED}[x] Transfer failed for {from_address}{Style.RESET_ALL}")
+            progress_bar_animation("[~] Waiting before retry...", 3)
             return False
 
     except Exception as e:
-        print(f"{Fore.RED}❌ Failed to transfer from {from_address}: {str(e)}{Style.RESET_ALL}")
-        progress_bar_animation("⏳ Waiting before retry...", 3)
+        print(f"{Fore.RED}[x] Failed to transfer from {from_address}: {str(e)}{Style.RESET_ALL}")
+        progress_bar_animation("[~] Waiting before retry...", 3)
         return False
 
 def is_valid_address(address):
@@ -219,12 +219,12 @@ def is_valid_address(address):
 def read_wallet_address():
     try:
         if not os.path.exists(WALLET_FILE):
-            print(f"{Fore.RED}❌ {WALLET_FILE} not found! Please create it with a valid Ethereum address.{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] {WALLET_FILE} not found! Please create it with a valid Ethereum address.{Style.RESET_ALL}")
             return None
         with open(WALLET_FILE, 'r') as f:
             lines = [line.strip() for line in f if line.strip()]
             if not lines:
-                print(f"{Fore.RED}❌ {WALLET_FILE} is empty! Please add a valid Ethereum address.{Style.RESET_ALL}")
+                print(f"{Fore.RED}[x] {WALLET_FILE} is empty! Please add a valid Ethereum address.{Style.RESET_ALL}")
                 return None
 
             address = random.choice(lines)
@@ -232,10 +232,10 @@ def read_wallet_address():
             if is_valid_address(address):
                 return w3.to_checksum_address(address)
             else:
-                print(f"{Fore.RED}❌ Invalid address in {WALLET_FILE}: {address}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[x] Invalid address in {WALLET_FILE}: {address}{Style.RESET_ALL}")
                 return None
     except Exception as e:
-        print(f"{Fore.RED}❌ Error reading {WALLET_FILE}: {str(e)}{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Error reading {WALLET_FILE}: {str(e)}{Style.RESET_ALL}")
         return None
 
 def get_cycle_count():
@@ -243,37 +243,37 @@ def get_cycle_count():
         try:
             cycles = int(sys.argv[1])
             if cycles <= 0:
-                print(f"{Fore.RED}❌ Number of cycles must be greater than 0{Style.RESET_ALL}")
+                print(f"{Fore.RED}[x] Number of cycles must be greater than 0{Style.RESET_ALL}")
                 sys.exit(1)
-            print(f"{Fore.GREEN}✅ Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[✓] Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
             return cycles
         except ValueError:
-            print(f"{Fore.RED}❌ Invalid CLI argument. Please enter a valid number.{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Invalid CLI argument. Please enter a valid number.{Style.RESET_ALL}")
             sys.exit(1)
     else:
         while True:
             try:
-                cycles = int(input(f"{Fore.YELLOW}🔢 Enter the number of cycles (each cycle creates 10 wallets): {Style.RESET_ALL}"))
+                cycles = int(input(f"{Fore.YELLOW}[i] Enter the number of cycles (each cycle creates 10 wallets): {Style.RESET_ALL}"))
                 if cycles <= 0:
-                    print(f"{Fore.RED}❌ Number of cycles must be greater than 0{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[x] Number of cycles must be greater than 0{Style.RESET_ALL}")
                     continue
-                print(f"{Fore.GREEN}✅ Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[✓] Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
                 return cycles
             except ValueError:
-                print(f"{Fore.RED}❌ Please enter a valid number{Style.RESET_ALL}")
+                print(f"{Fore.RED}[x] Please enter a valid number{Style.RESET_ALL}")
 
-def process_batch(recipient, batch_size=10):
+def process_batch(recipient, batch_size=5):
     wallets = []
     
-    print(f"{Fore.CYAN}🌟 Creating {batch_size} new wallets...{Style.RESET_ALL}")
-    progress_bar_animation("⏳ Generating wallets...", 2)
+    print(f"{Fore.CYAN}[i] Creating {batch_size} new wallets...{Style.RESET_ALL}")
+    progress_bar_animation("[~] Generating wallets...", 2)
     for _ in range(batch_size):
         address, private_key = generate_wallet()
         wallets.append((address, private_key))
-        print(f"{Fore.BLUE}🆕 New wallet created - Address: {address}{Style.RESET_ALL}")
+        print(f"{Fore.BLUE}[i] New wallet created - Address: {address}{Style.RESET_ALL}")
     
-    print(f"{Fore.CYAN}🔑 Logging in for {batch_size} wallets...{Style.RESET_ALL}")
-    progress_bar_animation("⏳ Processing logins...", 2)
+    print(f"{Fore.CYAN}[~] Logging in for {batch_size} wallets...{Style.RESET_ALL}")
+    progress_bar_animation("[~] Processing logins...", 2)
     for i, (address, private_key) in enumerate(wallets[:]):
         signature, recovered_address = create_signature(private_key)
         if signature and recovered_address.lower() == address.lower():
@@ -281,14 +281,14 @@ def process_batch(recipient, batch_size=10):
             if jwt:
                 wallets[i] = (address, private_key, jwt)
             else:
-                print(f"{Fore.RED}❌ Login failed for {address}, skipping this wallet{Style.RESET_ALL}")
+                print(f"{Fore.RED}[x] Login failed for {address}, skipping this wallet{Style.RESET_ALL}")
                 wallets[i] = None
         else:
-            print(f"{Fore.RED}❌ Failed to create signature for {address}, skipping this wallet{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Failed to create signature for {address}, skipping this wallet{Style.RESET_ALL}")
             wallets[i] = None
     
-    print(f"{Fore.CYAN}💧 Claiming faucet for wallets that logged in successfully...{Style.RESET_ALL}")
-    progress_bar_animation("⏳ Claiming faucets...", 2)
+    print(f"{Fore.CYAN}[i] Claiming faucet for wallets that logged in successfully...{Style.RESET_ALL}")
+    progress_bar_animation("[~] Claiming faucets...", 2)
     for i, wallet in enumerate(wallets[:]):
         if wallet is None:
             continue
@@ -298,25 +298,25 @@ def process_batch(recipient, batch_size=10):
         try:
             response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
             if response.status_code == 200:
-                print(f"{Fore.GREEN}✅ Successfully claimed faucet for {address}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
             else:
-                print(f"{Fore.RED}❌ Failed to claim faucet for {address}: {response.json()}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[x] Failed to claim faucet for {address}: {response.json()}{Style.RESET_ALL}")
                 wallets[i] = None
         except Exception as e:
-            print(f"{Fore.RED}❌ Failed to claim faucet for {address}: {str(e)}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Failed to claim faucet for {address}: {str(e)}{Style.RESET_ALL}")
             wallets[i] = None
     
-    print(f"{Fore.CYAN}💸 Transferring to {recipient}...{Style.RESET_ALL}")
-    progress_bar_animation("⏳ Initiating transfers...", 2)
+    print(f"{Fore.CYAN}[~] Transferring to {recipient}...{Style.RESET_ALL}")
+    progress_bar_animation("[~] Initiating transfers...", 2)
     for wallet in wallets:
         if wallet is None:
             continue
         address, private_key, _ = wallet
         balance_wei, balance_phrs = get_balance(address)
-        print(f"{Fore.BLUE}💰 Balance {address}: {balance_phrs:.4f} PHRS{Style.RESET_ALL}")
+        print(f"{Fore.BLUE}[i] Balance {address}: {balance_phrs:.4f} PHRS{Style.RESET_ALL}")
         
         if balance_wei == 0:
-            print(f"{Fore.RED}❌ Zero balance for {address}, skipping this wallet{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Zero balance for {address}, skipping this wallet{Style.RESET_ALL}")
             continue
         
         gas_limit = 21000
@@ -324,44 +324,44 @@ def process_batch(recipient, batch_size=10):
         gas_fee = gas_limit * gas_price
         
         if balance_wei <= gas_fee:
-            print(f"{Fore.RED}❌ Insufficient balance for gas in {address}, skipping this wallet{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Insufficient balance for gas in {address}, skipping this wallet{Style.RESET_ALL}")
             continue
         
         amount_wei = balance_wei - gas_fee
         if amount_wei <= 0:
-            print(f"{Fore.RED}❌ Invalid transfer amount for {address}, skipping this wallet{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Invalid transfer amount for {address}, skipping this wallet{Style.RESET_ALL}")
             continue
         
         if transfer_peach(private_key, recipient, amount_wei):
-            print(f"{Fore.GREEN}✅ Successfully transferred from {address} to {recipient}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[✓] Successfully transferred to {recipient}{Style.RESET_ALL}")
         else:
-            print(f"{Fore.RED}❌ Failed to transfer from {address}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[x] Failed to transfer from {address}{Style.RESET_ALL}")
 
 def main():
     print(BANNER)
     
     if not check_rpc_connection():
-        print(f"{Fore.RED}❌ Cannot proceed due to RPC connection issue{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Cannot proceed due to RPC connection issue{Style.RESET_ALL}")
         return
     
     recipient = read_wallet_address()
     if not recipient:
-        print(f"{Fore.RED}❌ Cannot proceed without a valid recipient address in {WALLET_FILE}{Style.RESET_ALL}")
+        print(f"{Fore.RED}[x] Cannot proceed without a valid recipient address in {WALLET_FILE}{Style.RESET_ALL}")
         return
     
-    print(f"{Fore.GREEN}✅ Using recipient address: {recipient} for all cycles{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}[✓] Using recipient address: {recipient} for all cycles{Style.RESET_ALL}")
     
     total_cycles = get_cycle_count()
     
     for cycle in range(1, total_cycles + 1):
         print(f"{Fore.CYAN}🌌 Starting Cycle {cycle} of {total_cycles} 🌌{Style.RESET_ALL}")
         
-        print(f"{Fore.CYAN}💸 Processing 10 claims and transferring to {recipient}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}[~] Processing 10 claims and transferring to {recipient}{Style.RESET_ALL}")
         process_batch(recipient)
         
-        print(f"{Fore.GREEN}✅ Completed Cycle {cycle}: Processed 10 claims and transfers!{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}[✓] Completed Cycle {cycle}: Processed 10 claims and transfers!{Style.RESET_ALL}")
         if cycle < total_cycles:
-            progress_bar_animation("⏳ Waiting for next cycle...", 10)
+            progress_bar_animation("[~] Waiting for next cycle...", 10)
     
     print(f"{Fore.GREEN}🎉 All {total_cycles} cycles completed successfully!{Style.RESET_ALL}")
 
