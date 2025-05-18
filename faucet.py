@@ -11,7 +11,6 @@ from colorama import init, Fore, Style
 
 init()
 
-# Configuration
 WEB3_PROVIDER = "https://testnet.dplabs-internal.com"
 FAUCET_URL = "https://api.pharosnetwork.xyz/faucet/daily"
 LOGIN_URL = "https://api.pharosnetwork.xyz/user/login"
@@ -36,7 +35,6 @@ HEADERS = {
 
 w3 = Web3(Web3.HTTPProvider(WEB3_PROVIDER))
 
-# Fancy Banner
 BANNER = f"""
 {Fore.CYAN}{Style.BRIGHT}🌠 Sorry Bro 🌠
 {Fore.YELLOW}═══════════════════════════════════════════════
@@ -44,7 +42,6 @@ BANNER = f"""
 {Fore.YELLOW}═══════════════════════════════════════════════{Style.RESET_ALL}
 """
 
-# Text-based progress bar animation
 def progress_bar_animation(message, duration):
     spinner = ['|', '/', '-', '\\']
     end_time = time.time() + duration
@@ -56,7 +53,6 @@ def progress_bar_animation(message, duration):
         time.sleep(0.1)
         i += 1
 
-    # Akhiri dengan pesan selesai
     sys.stdout.write(f'\r{Fore.YELLOW}{message} Done!{Style.RESET_ALL}\n')
     sys.stdout.flush()
 
@@ -77,7 +73,7 @@ def generate_wallet():
     account = Account.create()
     address = account.address
     private_key = account._private_key.hex()
-    save_wallet_to_json(address, private_key)  # Simpan ke data.json
+    save_wallet_to_json(address, private_key)
     return address, private_key
 
 def save_wallet_to_json(address, private_key):
@@ -189,8 +185,18 @@ def transfer_peach(private_key, to_address, amount_wei):
         }
         
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        # tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+        try:
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+        except Exception as e1:
+            print(f"{Fore.YELLOW}[!] raw_transaction failed: {e1}{Style.RESET_ALL}")
+            try:
+                tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            except Exception as e2:
+                print(f"{Fore.RED}❌ Failed: {e2}{Style.RESET_ALL}")
+                progress_bar_animation("⏳ Waiting before retry...", 3)
+                return False
+
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         
         if receipt.status == 1:
@@ -201,13 +207,13 @@ def transfer_peach(private_key, to_address, amount_wei):
             print(f"{Fore.RED}❌ Transfer failed for {from_address}{Style.RESET_ALL}")
             progress_bar_animation("⏳ Waiting before retry...", 3)
             return False
+
     except Exception as e:
         print(f"{Fore.RED}❌ Failed to transfer from {from_address}: {str(e)}{Style.RESET_ALL}")
         progress_bar_animation("⏳ Waiting before retry...", 3)
         return False
 
 def is_valid_address(address):
-    # Contoh validasi sederhana, sesuaikan jika perlu
     return address.startswith("0x") and len(address) == 42
 
 def read_wallet_address():
@@ -221,7 +227,7 @@ def read_wallet_address():
                 print(f"{Fore.RED}❌ {WALLET_FILE} is empty! Please add a valid Ethereum address.{Style.RESET_ALL}")
                 return None
 
-            address = random.choice(lines)  # ← ambil acak
+            address = random.choice(lines)
             print(f"{Fore.MAGENTA}Randomly selected recipient: {address}{Style.RESET_ALL}")
             if is_valid_address(address):
                 return w3.to_checksum_address(address)
@@ -326,7 +332,6 @@ def main():
         print(f"{Fore.RED}❌ Cannot proceed due to RPC connection issue{Style.RESET_ALL}")
         return
     
-    # Read single recipient address from wallet.txt
     recipient = read_wallet_address()
     if not recipient:
         print(f"{Fore.RED}❌ Cannot proceed without a valid recipient address in {WALLET_FILE}{Style.RESET_ALL}")
