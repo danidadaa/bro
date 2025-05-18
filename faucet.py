@@ -245,7 +245,7 @@ def get_cycle_count():
             if cycles <= 0:
                 print(f"{Fore.RED}[x] Number of cycles must be greater than 0{Style.RESET_ALL}")
                 sys.exit(1)
-            print(f"{Fore.GREEN}[✓] Will run {cycles} cycles with 10 wallets each{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}[✓] Will run {cycles} cycles with 5 wallets each{Style.RESET_ALL}")
             return cycles
         except ValueError:
             print(f"{Fore.RED}[x] Invalid CLI argument. Please enter a valid number.{Style.RESET_ALL}")
@@ -253,7 +253,7 @@ def get_cycle_count():
     else:
         while True:
             try:
-                cycles = int(input(f"{Fore.YELLOW}[i] Enter the number of cycles (each cycle creates 10 wallets): {Style.RESET_ALL}"))
+                cycles = int(input(f"{Fore.YELLOW}[i] Enter the number of cycles (each cycle creates 5 wallets): {Style.RESET_ALL}"))
                 if cycles <= 0:
                     print(f"{Fore.RED}[x] Number of cycles must be greater than 0{Style.RESET_ALL}")
                     continue
@@ -359,9 +359,9 @@ def main():
         print(f"{Fore.CYAN}[~] Processing 10 claims and transferring to {recipient}{Style.RESET_ALL}")
         process_batch(recipient)
         
-        print(f"{Fore.GREEN}[✓] Completed Cycle {cycle}: Processed 10 claims and transfers!{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}[✓] Completed Cycle {cycle}: Processed 5 claims and transfers!{Style.RESET_ALL}")
         if cycle < total_cycles:
-            progress_bar_animation("[~] Waiting for next cycle...", 10)
+            progress_bar_animation("[~] Waiting for next cycle...", 5)
     
     print(f"{Fore.GREEN}🎉 All {total_cycles} cycles completed successfully!{Style.RESET_ALL}")
 
