@@ -15,7 +15,7 @@ WEB3_PROVIDER = "https://testnet.dplabs-internal.com"
 FAUCET_URL = "https://api.pharosnetwork.xyz/faucet/daily"
 LOGIN_URL = "https://api.pharosnetwork.xyz/user/login"
 INVITE_CODE = ""
-WALLET_FILE = "100.txt"
+WALLET_FILE = "wallet.txt"
 DATA_FILE = "data.json"
 
 HEADERS = {
