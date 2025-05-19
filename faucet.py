@@ -38,7 +38,7 @@ w3 = Web3(Web3.HTTPProvider(WEB3_PROVIDER))
 BANNER = f"""
 {Fore.CYAN}{Style.BRIGHT}🌠 Sorry Bro 🌠
 {Fore.YELLOW}═══════════════════════════════════════════════
-{Fore.BLUE}👨‍💻 Developed by: Poopbot Enjoy - Ok Bro
+{Fore.BLUE}👨‍💻  Developed by: Poopbot Enjoy - Ok Bro
 {Fore.YELLOW}═══════════════════════════════════════════════{Style.RESET_ALL}
 """
 DELAY_SECONDS = 2
@@ -58,7 +58,7 @@ def progress_bar_animation(message, duration):
     sys.stdout.flush()
 
 def check_rpc_connection():
-    print(f"{Fore.BLUE}🔍 Checking RPC connection...{Style.RESET_ALL}")
+    print(f"{Fore.BLUE}🔍  Checking RPC connection...{Style.RESET_ALL}")
     try:
         if w3.is_connected():
             print(f"{Fore.GREEN}[✓] Connected to RPC: {WEB3_PROVIDER}{Style.RESET_ALL}")
@@ -358,7 +358,7 @@ def main():
     total_cycles = get_cycle_count()
     
     for cycle in range(1, total_cycles + 1):
-        print(f"{Fore.CYAN}🌌 Starting Cycle {cycle} of {total_cycles} 🌌{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}\n🌌  Starting Cycle {cycle} of {total_cycles} 🌌{Style.RESET_ALL}")
         
         print(f"{Fore.CYAN}[~] Processing 1 claims and transferring to {recipient}{Style.RESET_ALL}")
         process_batch(recipient)
