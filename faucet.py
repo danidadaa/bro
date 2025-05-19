@@ -17,21 +17,54 @@ LOGIN_URL = "https://api.pharosnetwork.xyz/user/login"
 INVITE_CODE = ""
 WALLET_FILE = "wallet.txt"
 DATA_FILE = "data.json"
+import random
 
-HEADERS = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "ja-ID,ja;q=0.9,id-ID;q=0.8,id;q=0.7,en-ID;q=0.6,en-US;q=0.5,en;q=0.4",
-    "Origin": "https://testnet.pharosnetwork.xyz",
-    "Referer": "https://testnet.pharosnetwork.xyz/",
-    "Sec-Ch-Ua": '"Chromium";v="137", "Not/A)Brand";v="24"',
-    "Sec-Ch-Ua-Mobile": "?1",
-    "Sec-Ch-Ua-Platform": '"Android"',
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-site",
-    "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36"
-}
+def get_random_headers():
+    platforms = [
+        ("Android", "Linux; Android 12; Pixel 6"),
+        ("Windows", "Windows NT 10.0; Win64; x64"),
+        ("macOS", "Macintosh; Intel Mac OS X 13_2"),
+        ("iOS", "iPhone; CPU iPhone OS 16_0 like Mac OS X"),
+        ("Linux", "X11; Linux x86_64")
+    ]
+
+    chromium_versions = ["117.0.5938.132", "118.0.5993.89", "120.0.6099.129", "125.0.6422.60"]
+    safari_versions = ["537.36", "605.1.15"]
+    ua_templates = {
+        "Android": "Mozilla/5.0 ({os}) AppleWebKit/{safari} (KHTML, like Gecko) Chrome/{chrome} Mobile Safari/{safari}",
+        "Windows": "Mozilla/5.0 ({os}) AppleWebKit/{safari} (KHTML, like Gecko) Chrome/{chrome} Safari/{safari}",
+        "macOS": "Mozilla/5.0 ({os}) AppleWebKit/{safari} (KHTML, like Gecko) Chrome/{chrome} Safari/{safari}",
+        "iOS": "Mozilla/5.0 ({os}) AppleWebKit/{safari} (KHTML, like Gecko) CriOS/{chrome} Mobile/15E148 Safari/{safari}",
+        "Linux": "Mozilla/5.0 ({os}) AppleWebKit/{safari} (KHTML, like Gecko) Chrome/{chrome} Safari/{safari}"
+    }
+
+    platform_name, os_string = random.choice(platforms)
+    chrome_version = random.choice(chromium_versions)
+    safari_version = random.choice(safari_versions)
+    ua_string = ua_templates[platform_name].format(os=os_string, chrome=chrome_version, safari=safari_version)
+
+    sec_ch_ua = '"Chromium";v="{}"'.format(chrome_version.split('.')[0])
+    sec_ch_ua_mobile = "?1" if "Android" in platform_name or "iOS" in platform_name else "?0"
+
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "ja-ID,ja;q=0.9,id-ID;q=0.8,id;q=0.7,en-ID;q=0.6,en-US;q=0.5,en;q=0.4",
+        "Origin": "https://testnet.pharosnetwork.xyz",
+        "Referer": "https://testnet.pharosnetwork.xyz/",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Sec-Ch-Ua": sec_ch_ua,
+        "Sec-Ch-Ua-Mobile": sec_ch_ua_mobile,
+        "Sec-Ch-Ua-Platform": f'"{platform_name}"',
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-site",
+        "User-Agent": ua_string
+    }
+
+    return headers
+
+HEADERS = get_random_headers()
 
 w3 = Web3(Web3.HTTPProvider(WEB3_PROVIDER))
 
