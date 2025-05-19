@@ -264,17 +264,18 @@ def get_cycle_count():
 
 def process_batch(recipient, batch_size=5):
     wallets = []
-    
+
     print(f"{Fore.CYAN}[i] Creating {batch_size} new wallets...{Style.RESET_ALL}")
-    progress_bar_animation("[~] Generating wallets...", 2)
+    progress_bar_animation("[~] Generating wallets...", DELAY_SECONDS)
     for _ in range(batch_size):
         address, private_key = generate_wallet()
         wallets.append((address, private_key))
         print(f"{Fore.BLUE}[i] New wallet created - Address: {address}{Style.RESET_ALL}")
-    
+
     print(f"{Fore.CYAN}[~] Logging in for {batch_size} wallets...{Style.RESET_ALL}")
-    progress_bar_animation("[~] Processing logins...", 2)
+    progress_bar_animation("[~] Processing logins...", DELAY_SECONDS)
     for i, (address, private_key) in enumerate(wallets[:]):
+        time.sleep(DELAY_SECONDS)
         signature, recovered_address = create_signature(private_key)
         if signature and recovered_address.lower() == address.lower():
             jwt = login(address, signature)
@@ -286,12 +287,13 @@ def process_batch(recipient, batch_size=5):
         else:
             print(f"{Fore.RED}[x] Failed to create signature for {address}, skipping this wallet{Style.RESET_ALL}")
             wallets[i] = None
-    
+
     print(f"{Fore.CYAN}[i] Claiming faucet for wallets that logged in successfully...{Style.RESET_ALL}")
-    progress_bar_animation("[~] Claiming faucets...", 2)
+    progress_bar_animation("[~] Claiming faucets...", DELAY_SECONDS)
     for i, wallet in enumerate(wallets[:]):
         if wallet is None:
             continue
+        time.sleep(DELAY_SECONDS)
         address, private_key, jwt = wallet
         headers = HEADERS.copy()
         headers["Authorization"] = f"Bearer {jwt}"
@@ -305,33 +307,34 @@ def process_batch(recipient, batch_size=5):
         except Exception as e:
             print(f"{Fore.RED}[x] Failed to claim faucet for {address}: {str(e)}{Style.RESET_ALL}")
             wallets[i] = None
-    
+
     print(f"{Fore.CYAN}[~] Transferring to {recipient}...{Style.RESET_ALL}")
-    progress_bar_animation("[~] Initiating transfers...", 2)
+    progress_bar_animation("[~] Initiating transfers...", DELAY_SECONDS)
     for wallet in wallets:
         if wallet is None:
             continue
+        time.sleep(DELAY_SECONDS)
         address, private_key, _ = wallet
         balance_wei, balance_phrs = get_balance(address)
         print(f"{Fore.BLUE}[i] Balance {address}: {balance_phrs:.4f} PHRS{Style.RESET_ALL}")
-        
+
         if balance_wei == 0:
             print(f"{Fore.RED}[x] Zero balance for {address}, skipping this wallet{Style.RESET_ALL}")
             continue
-        
+
         gas_limit = 21000
         gas_price = w3.eth.gas_price
         gas_fee = gas_limit * gas_price
-        
+
         if balance_wei <= gas_fee:
             print(f"{Fore.RED}[x] Insufficient balance for gas in {address}, skipping this wallet{Style.RESET_ALL}")
             continue
-        
+
         amount_wei = balance_wei - gas_fee
         if amount_wei <= 0:
             print(f"{Fore.RED}[x] Invalid transfer amount for {address}, skipping this wallet{Style.RESET_ALL}")
             continue
-        
+
         if transfer_peach(private_key, recipient, amount_wei):
             print(f"{Fore.GREEN}[✓] Successfully transferred to {recipient}{Style.RESET_ALL}")
         else:
