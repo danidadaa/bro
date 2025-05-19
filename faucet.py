@@ -74,7 +74,7 @@ BANNER = f"""
 {Fore.BLUE}👨‍💻  Developed by: Poopbot Enjoy - Ok Bro
 {Fore.YELLOW}═══════════════════════════════════════════════{Style.RESET_ALL}
 """
-DELAY_SECONDS = 2
+DELAY_SECONDS = 1
 
 def progress_bar_animation(message, duration):
     spinner = ['|', '/', '-', '\\']
@@ -335,6 +335,7 @@ def process_batch(recipient, batch_size=5):
             response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
             if response.status_code == 200:
                 print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
+                print(f"{Fore.MAGENTA}[i] {response.json()}{Style.RESET_ALL}")
             else:
                 print(f"{Fore.RED}[x] Failed to claim faucet for {address}: {response.json()}{Style.RESET_ALL}")
                 wallets[i] = None
