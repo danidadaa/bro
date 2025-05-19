@@ -263,7 +263,7 @@ def get_cycle_count():
             except ValueError:
                 print(f"{Fore.RED}[x] Please enter a valid number{Style.RESET_ALL}")
 
-def process_batch(recipient, batch_size=1):
+def process_batch(recipient, batch_size=5):
     wallets = []
 
     print(f"{Fore.CYAN}[i] Creating {batch_size} new wallets...{Style.RESET_ALL}")
