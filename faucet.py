@@ -353,9 +353,9 @@ def process_batch(recipient, batch_size=5):
                             wallets[i] = None
                     else:
                         wallets[i] = None
-            except Exception as e:
-                print(f"{Fore.RED}[x] JSON parsing error or other: {str(e)}{Style.RESET_ALL}")
-                wallets[i] = None
+        except Exception as e:
+            print(f"{Fore.RED}[x] JSON parsing error or other: {str(e)}{Style.RESET_ALL}")
+            wallets[i] = None
 
     print(f"{Fore.CYAN}[~] Transferring to {recipient}...{Style.RESET_ALL}")
     progress_bar_animation("[~] Initiating transfers...", DELAY_SECONDS)
