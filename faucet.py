@@ -41,6 +41,7 @@ BANNER = f"""
 {Fore.BLUE}👨‍💻 Developed by: Poopbot Enjoy - Ok Bro
 {Fore.YELLOW}═══════════════════════════════════════════════{Style.RESET_ALL}
 """
+DELAY_SECONDS = 2
 
 def progress_bar_animation(message, duration):
     spinner = ['|', '/', '-', '\\']
