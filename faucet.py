@@ -296,6 +296,27 @@ def get_cycle_count():
             except ValueError:
                 print(f"{Fore.RED}[x] Please enter a valid number{Style.RESET_ALL}")
 
+def post_with_retry(url, headers, retries=1, delay=3):
+    for attempt in range(retries + 1):
+        try:
+            response = requests.post(url, headers=headers)
+            res_json = response.json()
+            if response.status_code == 200 and res_json.get("code") == 0:
+                return True, res_json
+            else:
+                msg = res_json.get("msg", "")
+                if "cannot assign requested address" in msg and attempt < retries:
+                    print(f"{Fore.CYAN}[~] Backend connection error, retrying in {delay} seconds...{Style.RESET_ALL}")
+                    time.sleep(delay)
+                    continue
+                else:
+                    print(f"{Fore.YELLOW}[i] Faucet claim failed: {msg}{Style.RESET_ALL}")
+                    return False, res_json
+        except Exception as e:
+            print(f"{Fore.RED}[x] Request or JSON parse error: {e}{Style.RESET_ALL}")
+            return False, None
+    return False, None
+
 def process_batch(recipient, batch_size=5):
     wallets = []
 
@@ -331,30 +352,11 @@ def process_batch(recipient, batch_size=5):
         address, private_key, jwt = wallet
         headers = HEADERS.copy()
         headers["Authorization"] = f"Bearer {jwt}"
-        try:
-            response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
-            try:
-                res_json = response.json()
-                if response.status_code == 200 and res_json.get("code") == 0:
-                    print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
-                else:
-                    msg = res_json.get("msg", "")
-                    print(f"{Fore.YELLOW}[i] Faucet claim failed for {address}: {msg}{Style.RESET_ALL}")
-                    if "cannot assign requested address" in msg:
-                        print(f"{Fore.CYAN}[~] Detected backend connection error, will retry after 3 seconds...{Style.RESET_ALL}")
-                        time.sleep(3)
-                        # Retry once
-                        response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
-                        res_json = response.json()
-                        if response.status_code == 200 and res_json.get("code") == 0:
-                            print(f"{Fore.GREEN}[✓] Retried: Successfully claimed faucet for {address}{Style.RESET_ALL}")
-                        else:
-                            print(f"{Fore.RED}[x] Retried: Failed to claim faucet for {address}{Style.RESET_ALL}")
-                            wallets[i] = None
-                    else:
-                        wallets[i] = None
-        except Exception as e:
-            print(f"{Fore.RED}[x] JSON parsing error or other: {str(e)}{Style.RESET_ALL}")
+        success, res_json = post_with_retry(f"{FAUCET_URL}?address={address}", headers)
+        if success:
+            print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
+        else:
+            print(f"{Fore.RED}[x] Failed to claim faucet for {address}{Style.RESET_ALL}")
             wallets[i] = None
 
     print(f"{Fore.CYAN}[~] Transferring to {recipient}...{Style.RESET_ALL}")
