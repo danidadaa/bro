@@ -333,15 +333,29 @@ def process_batch(recipient, batch_size=5):
         headers["Authorization"] = f"Bearer {jwt}"
         try:
             response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
-            if response.status_code == 200:
-                print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
-                print(f"{Fore.MAGENTA}[i] {response.json()}{Style.RESET_ALL}")
-            else:
-                print(f"{Fore.RED}[x] Failed to claim faucet for {address}: {response.json()}{Style.RESET_ALL}")
+            try:
+                res_json = response.json()
+                if response.status_code == 200 and res_json.get("code") == 0:
+                    print(f"{Fore.GREEN}[✓] Successfully claimed faucet for {address}{Style.RESET_ALL}")
+                else:
+                    msg = res_json.get("msg", "")
+                    print(f"{Fore.YELLOW}[i] Faucet claim failed for {address}: {msg}{Style.RESET_ALL}")
+                    if "cannot assign requested address" in msg:
+                        print(f"{Fore.CYAN}[~] Detected backend connection error, will retry after 3 seconds...{Style.RESET_ALL}")
+                        time.sleep(3)
+                        # Retry once
+                        response = requests.post(f"{FAUCET_URL}?address={address}", headers=headers)
+                        res_json = response.json()
+                        if response.status_code == 200 and res_json.get("code") == 0:
+                            print(f"{Fore.GREEN}[✓] Retried: Successfully claimed faucet for {address}{Style.RESET_ALL}")
+                        else:
+                            print(f"{Fore.RED}[x] Retried: Failed to claim faucet for {address}{Style.RESET_ALL}")
+                            wallets[i] = None
+                    else:
+                        wallets[i] = None
+            except Exception as e:
+                print(f"{Fore.RED}[x] JSON parsing error or other: {str(e)}{Style.RESET_ALL}")
                 wallets[i] = None
-        except Exception as e:
-            print(f"{Fore.RED}[x] Failed to claim faucet for {address}: {str(e)}{Style.RESET_ALL}")
-            wallets[i] = None
 
     print(f"{Fore.CYAN}[~] Transferring to {recipient}...{Style.RESET_ALL}")
     progress_bar_animation("[~] Initiating transfers...", DELAY_SECONDS)
