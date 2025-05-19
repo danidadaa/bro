@@ -296,7 +296,7 @@ def get_cycle_count():
             except ValueError:
                 print(f"{Fore.RED}[x] Please enter a valid number{Style.RESET_ALL}")
 
-def post_with_retry(url, headers, retries=3, delay=3):
+def post_with_retry(url, headers, retries=5, delay=3):
     for attempt in range(retries + 1):
         try:
             response = requests.post(url, headers=headers)
