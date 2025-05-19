@@ -296,7 +296,7 @@ def get_cycle_count():
             except ValueError:
                 print(f"{Fore.RED}[x] Please enter a valid number{Style.RESET_ALL}")
 
-def post_with_retry(url, headers, retries=1, delay=3):
+def post_with_retry(url, headers, retries=3, delay=3):
     for attempt in range(retries + 1):
         try:
             response = requests.post(url, headers=headers)
@@ -306,7 +306,7 @@ def post_with_retry(url, headers, retries=1, delay=3):
             else:
                 msg = res_json.get("msg", "")
                 if "cannot assign requested address" in msg and attempt < retries:
-                    print(f"{Fore.CYAN}[~] Backend connection error, retrying in {delay} seconds...{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}[~] Backend connection error, retrying in {delay} seconds... (Attempt {attempt + 1}/{retries}){Style.RESET_ALL}")
                     time.sleep(delay)
                     continue
                 else:
